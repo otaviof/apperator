@@ -1,0 +1,11 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: apperator
+subjects:
+- kind: ServiceAccount
+  name: apperator
+roleRef:
+  kind: Role
+  name: apperator
+  apiGroup: rbac.authorization.k8s.io
