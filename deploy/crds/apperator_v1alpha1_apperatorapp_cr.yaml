@@ -1,0 +1,7 @@
+apiVersion: apperator.otaviof.github.io/v1alpha1
+kind: ApperatorApp
+metadata:
+  name: example-apperatorapp
+spec:
+  # Add fields here
+  size: 3
