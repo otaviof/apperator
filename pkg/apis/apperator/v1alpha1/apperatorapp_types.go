@@ -1,26 +1,39 @@
 package v1alpha1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+//
+// After inserting new spec fields, run:
+//   $ make generate
+//
+// +k8s:openapi-gen=true
 
 // ApperatorAppSpec defines the desired state of ApperatorApp
-// +k8s:openapi-gen=true
 type ApperatorAppSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
+	Configuration ConfigurationSpec `json:"configuration"`
+	Deployment    DeploymentSpec    `json:"deployment"`
 }
 
-// ApperatorAppStatus defines the observed state of ApperatorApp
-// +k8s:openapi-gen=true
+// ConfigurationSpec holds the objects that compose app's configuration
+type ConfigurationSpec struct {
+	Environments []EnvironmentSpec `json:"environments,omitempty"`
+}
+
+// DeploymentSpec describes a core-v1 deployment spec object
+type DeploymentSpec struct {
+	Spec appsv1.DeploymentSpec `json:"spec"`
+}
+
+// EnvironmentSpec wrapper around core-v1 EnvVar
+type EnvironmentSpec struct {
+	Env []corev1.EnvVar `json:"env"`
+}
+
 type ApperatorAppStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
