@@ -5,6 +5,7 @@ import (
 )
 
 // DeploymentSpec describes a core-v1 deployment spec object
+// +k8s:openapi-gen=true
 type DeploymentSpec struct {
 	Spec appsv1.DeploymentSpec `json:"spec"`
 }

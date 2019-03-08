@@ -8,31 +8,21 @@ import (
 // After inserting new spec fields, run:
 //   $ make generate
 //
-// +k8s:openapi-gen=true
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-//
 
 // ApperatorAppSpec defines the desired state of ApperatorApp
+// +k8s:openapi-gen=true
 type ApperatorAppSpec struct {
-	Configuration   ConfigurationSpec   `json:"configuration"`
-	Deployment      DeploymentSpec      `json:"deployment"`
-	Instrumentation InstrumentationSpec `json:"instrumentation"`
-}
-
-// InstrumentationSpec describes the instrumentation type employed
-type InstrumentationSpec struct {
-	Name   string      `json:"name"`
-	Probes []ProbeSpec `json:"probes"`
-}
-
-type ProbeSpec struct {
+	Deployment DeploymentSpec `json:"deployment"`
 }
 
 // ApperatorAppStatus holds the operator status
+// +k8s:openapi-gen=true
 type ApperatorAppStatus struct {
 }
 
 // ApperatorApp is the Schema for the apperatorapps API
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
 type ApperatorApp struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -42,6 +32,7 @@ type ApperatorApp struct {
 }
 
 // ApperatorAppList contains a list of ApperatorApp
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ApperatorAppList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
