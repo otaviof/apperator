@@ -1,5 +1,6 @@
 OPERATOR = "apperator"
 IMAGE_PREFIX = "otaviof"
+NAMESPACE = ${KUBERNETES_NAMESPACE}
 
 default: build
 
@@ -12,5 +13,8 @@ generate: FORCE
 
 build: FORCE
 	operator-sdk build $(IMAGE_PREFIX)/$(OPERATOR)
+
+test: FORCE
+	operator-sdk test local ./test/e2e --namespace $(NAMESPACE)
 
 FORCE: ;
