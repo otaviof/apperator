@@ -12,7 +12,6 @@ indent_size = 4
 
 max_line_length = 101
 
-
 [*.md,*.yml,*.yaml]
 indent_size = 2
 
