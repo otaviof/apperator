@@ -11,10 +11,16 @@ dep:
 generate: FORCE
 	operator-sdk generate k8s
 
-build: FORCE
-	operator-sdk build $(IMAGE_PREFIX)/$(OPERATOR)
+build:
+	operator-sdk build --enable-tests $(IMAGE_PREFIX)/$(OPERATOR):latest
+
+push: build
+	docker push $(IMAGE_PREFIX)/$(OPERATOR):latest
 
 test: FORCE
+	go test -v ./pkg/controller/apperatorapp
+
+integration:
 	operator-sdk test local ./test/e2e --namespace $(NAMESPACE)
 
 FORCE: ;
