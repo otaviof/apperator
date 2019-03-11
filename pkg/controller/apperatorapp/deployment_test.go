@@ -17,7 +17,8 @@ import (
 
 var deployment *Deployment
 
-// TestNewDeployment setup Deployment object with context.
+// TestNewDeployment setup Deployment object with context. This method setup the Kubernetes related
+// infrastructure so we can run the controller code.
 func TestNewDeployment(t *testing.T) {
 	// setting up verbose logging
 	logf.SetLogger(logf.ZapLogger(true))
@@ -37,6 +38,19 @@ func TestNewDeployment(t *testing.T) {
 		Spec: v1alpha1.ApperatorEnvSpec{
 			Env: []corev1.EnvVar{
 				corev1.EnvVar{Name: "ENV_VAR_2", Value: "VALUE"},
+			},
+		},
+	}
+
+	apperatorInitContainerObj := &v1alpha1.ApperatorContainer{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "init-container",
+			Namespace: namespace,
+		},
+		Spec: v1alpha1.ApperatorContainerSpec{
+			Spec: corev1.Container{
+				Name:  "init-container",
+				Image: "example/init-container:latest",
 			},
 		},
 	}
@@ -61,7 +75,7 @@ func TestNewDeployment(t *testing.T) {
 							Containers: []corev1.Container{
 								corev1.Container{
 									Name:  "app",
-									Image: "example/image",
+									Image: "example/image:latest",
 									Env: []corev1.EnvVar{
 										corev1.EnvVar{Name: "ENV_VAR_1", Value: "VALUE"},
 									},
@@ -72,7 +86,7 @@ func TestNewDeployment(t *testing.T) {
 				},
 			},
 			Envs:           []string{"env"},
-			InitContainers: []string{},
+			InitContainers: []string{"init-container"},
 			Probes:         []string{},
 			Sidecars:       []string{},
 			Vault:          []string{},
@@ -81,11 +95,17 @@ func TestNewDeployment(t *testing.T) {
 
 	objects := []runtime.Object{
 		apperatorEnvObj,
+		apperatorInitContainerObj,
 		apperatorAppObj,
 	}
 
 	s := scheme.Scheme
-	s.AddKnownTypes(v1alpha1.SchemeGroupVersion, apperatorEnvObj, apperatorAppObj)
+	s.AddKnownTypes(
+		v1alpha1.SchemeGroupVersion,
+		apperatorEnvObj,
+		apperatorInitContainerObj,
+		apperatorAppObj,
+	)
 
 	client := fake.NewFakeClient(objects...)
 	deployment = NewDeployment(client, apperatorAppObj)
@@ -94,11 +114,19 @@ func TestNewDeployment(t *testing.T) {
 	assert.Equal(t, namespace, deployment.namespace)
 }
 
-func TestMergeEnvs(t *testing.T) {
-	err := deployment.mergeEnvs()
+func TestDeploymentRender(t *testing.T) {
+	_, err := deployment.Render()
 
 	assert.Nil(t, err)
+}
+
+func TestDeploymentMergeEnvs(t *testing.T) {
 	assert.Equal(t, 2, len(deployment.deployment.Template.Spec.Containers[0].Env))
 	assert.Equal(t, "ENV_VAR_1", deployment.deployment.Template.Spec.Containers[0].Env[0].Name)
 	assert.Equal(t, "ENV_VAR_2", deployment.deployment.Template.Spec.Containers[0].Env[1].Name)
+}
+
+func TestDeploymentMergeInitContainers(t *testing.T) {
+	assert.Equal(t, 1, len(deployment.deployment.Template.Spec.InitContainers))
+	assert.Equal(t, "init-container", deployment.deployment.Template.Spec.InitContainers[0].Name)
 }

@@ -27,14 +27,13 @@ func (d *Deployment) mergeEnvs() error {
 	var err error
 
 	d.log.Info("Retrieving ApperatorEnv objects...")
-	for _, envName := range d.app.Spec.Envs {
-		d.log.Info("Loading ApperatorEnv object", "ApperatorEnv", envName)
-
+	for _, name := range d.app.Spec.Envs {
+		d.log.Info("Loading ApperatorEnv object", "ApperatorEnv", name)
 		env := &v1alpha1.ApperatorEnv{}
-		meta := types.NamespacedName{Name: envName, Namespace: d.namespace}
+		meta := types.NamespacedName{Name: name, Namespace: d.namespace}
 
 		if err = d.client.Get(context.TODO(), meta, env); err != nil {
-			d.log.Error(err, "Failed to read ApperatorEnv '%s'", envName)
+			d.log.Error(err, "Failed to read ApperatorEnv", "ApperatorEnv", name)
 			return err
 		}
 
@@ -51,6 +50,30 @@ func (d *Deployment) mergeEnvs() error {
 	return nil
 }
 
+// mergeInitContainers put together the container objects described as init-containers.
+func (d *Deployment) mergeInitContainers() error {
+	var err error
+
+	d.log.Info("Retrieving ApperatorContainer designated as init-container...")
+	for _, name := range d.app.Spec.InitContainers {
+		d.log.Info("Loading Init-Container object", "ApperatorContainer", name)
+		container := &v1alpha1.ApperatorContainer{}
+		meta := types.NamespacedName{Name: name, Namespace: d.namespace}
+
+		if err = d.client.Get(context.TODO(), meta, container); err != nil {
+			d.log.Error(err, "Failed to read ApperatorContainer", "ApperatorContainer", name)
+			return err
+		}
+
+		d.deployment.Template.Spec.InitContainers = append(
+			d.deployment.Template.Spec.InitContainers,
+			container.Spec.Spec,
+		)
+	}
+
+	return nil
+}
+
 // Render a deployment object based on ApperatorApp.
 func (d *Deployment) Render() (*Deployment, error) {
 	var err error
@@ -62,6 +85,9 @@ func (d *Deployment) Render() (*Deployment, error) {
 	}
 
 	if err = d.mergeEnvs(); err != nil {
+		return nil, err
+	}
+	if err = d.mergeInitContainers(); err != nil {
 		return nil, err
 	}
 
