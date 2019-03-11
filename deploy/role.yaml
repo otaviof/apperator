@@ -42,5 +42,9 @@ rules:
   - apperator.otaviof.github.io
   resources:
   - '*'
+  - apperatorenvs
+  - apperatorcontainers
+  - apperatorprobes
+  - apperatorvaults
   verbs:
   - '*'

@@ -1,0 +1,7 @@
+apiVersion: apperator.otaviof.github.io/v1alpha1
+kind: ApperatorVault
+metadata:
+  name: example-apperatorvault
+spec:
+  # Add fields here
+  size: 3

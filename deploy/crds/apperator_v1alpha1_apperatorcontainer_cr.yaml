@@ -1,0 +1,7 @@
+apiVersion: apperator.otaviof.github.io/v1alpha1
+kind: ApperatorContainer
+metadata:
+  name: example-apperatorcontainer
+spec:
+  # Add fields here
+  size: 3

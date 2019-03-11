@@ -1,0 +1,7 @@
+apiVersion: apperator.otaviof.github.io/v1alpha1
+kind: ApperatorProbe
+metadata:
+  name: example-apperatorprobe
+spec:
+  # Add fields here
+  size: 3
