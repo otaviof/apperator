@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,3 +31,10 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "apperator"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128m
+            limits:
+              cpu: 300m
+              memory: 512m
