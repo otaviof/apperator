@@ -1,12 +1,31 @@
 package v1alpha1
 
 import (
+	manifest "github.com/otaviof/vault-handler/pkg/apis/vault-handler/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ApperatorVaultSpec describes a Vault ready init-container
+// ApperatorVaultSpec contains the manifest for vault-handler.
 // +k8s:openapi-gen=true
-type ApperatorVaultSpec struct{}
+type ApperatorVaultSpec struct {
+	Authorization VaultAuthorizationSpec `json:"authorization"`
+	Secrets       manifest.Manifest      `json:"secrets"`
+}
+
+// VaultAuthorizationSpec configuration to load vault authorization items.
+// +k8s:openapi-gen=true
+type VaultAuthorizationSpec struct {
+	SecretName string                           `json:"secretName"` // kubernetes secret name
+	SecretKeys VaultAuthorizationSecretKeysSpec `json:"secretKeys"` // kubernetes secret key mapping
+}
+
+// VaultAuthorizationSecretKeysSpec keys names in kubernetes secrets.
+// +k8s:openapi-gen=true
+type VaultAuthorizationSecretKeysSpec struct {
+	RoleID   string `json:"roleId,omitempty"`   // key name for role-id
+	SecretID string `json:"secretId,omitempty"` // key name for secret-id
+	Token    string `json:"token,omitempty"`    // key name for token
+}
 
 // ApperatorVaultStatus defines the observed state of ApperatorVault
 // +k8s:openapi-gen=true
