@@ -4,7 +4,7 @@ NAMESPACE = ${KUBERNETES_NAMESPACE}
 
 default: build
 
-dep:
+bootstrap:
 	dep ensure -v -vendor-only
 
 # to run after modifying types, will generate items for k8s api
