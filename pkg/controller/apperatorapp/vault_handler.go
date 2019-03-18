@@ -14,7 +14,7 @@ type VaultHandler struct {
 	vaultAddr string                          // vault api endpoint
 	auth      *VaultHandlerAuth               // vault-handler authentication configuration
 	manifest  map[string]vaulthandler.Secrets // vault-handler manifest
-	container *corev1.Container               // shaped as vault-handler init-container
+	container corev1.Container                // shaped as vault-handler init-container
 }
 
 // VaultHandlerAuth section of config-map to define how vault-handler will authenticate.
@@ -113,7 +113,7 @@ func (v *VaultHandler) prepareEnv() []corev1.EnvVar {
 }
 
 // Container generated for vault-handler.
-func (v *VaultHandler) Container() *corev1.Container {
+func (v *VaultHandler) Container() corev1.Container {
 	v.container.Name = containerName
 	v.container.Image = "otaviof/vault-handler:latest" // FIXME: make it configurable
 	v.container.ImagePullPolicy = "Always"             // FIXME: make it configurable
@@ -169,7 +169,7 @@ func NewVaultHandler(configMap *corev1.ConfigMap, vaultAddr string) (*VaultHandl
 	vaultHandler := &VaultHandler{
 		configMap: configMap,
 		vaultAddr: vaultAddr,
-		container: &corev1.Container{},
+		container: corev1.Container{},
 	}
 
 	if err := vaultHandler.parseConfigMapData(); err != nil {
