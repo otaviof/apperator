@@ -7,6 +7,7 @@ import (
 	logr "github.com/go-logr/logr"
 	v1alpha1 "github.com/otaviof/apperator/pkg/apis/apperator/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -15,7 +16,7 @@ import (
 // Deployment represents the desired deployment object produced based on ApperatorApp.
 type Deployment struct {
 	client     client.Client
-	deployment *appsv1.DeploymentSpec
+	deployment appsv1.DeploymentSpec
 	app        *v1alpha1.ApperatorApp
 	name       string
 	namespace  string
@@ -50,6 +51,43 @@ func (d *Deployment) mergeEnvs() error {
 	return nil
 }
 
+// mergeVault init-container ready to run vault-handler.
+func (d *Deployment) mergeVaultHandler() error {
+	var err error
+
+	d.log.Info("Generating vault-handler init-containers...")
+	for _, name := range d.app.Spec.Vault {
+		var vaultHandler *VaultHandler
+
+		d.log.Info("Loading vault-handler ConfigMap object", "name", name)
+		configMap := &corev1.ConfigMap{}
+		meta := types.NamespacedName{Name: name, Namespace: d.namespace}
+
+		if err = d.client.Get(context.TODO(), meta, configMap); err != nil {
+			return err
+		}
+
+		// generating vault-handler entries for current deployment
+		if vaultHandler, err = NewVaultHandler(configMap, "FIXME"); err != nil {
+			return err
+		}
+		// adding volumes
+		for _, volume := range vaultHandler.VolumeEntry() {
+			d.log.Info("Appending volume for vault-handler", "name", volume.Name)
+			d.deployment.Template.Spec.Volumes = append(d.deployment.Template.Spec.Volumes, volume)
+		}
+		container := vaultHandler.Container()
+		d.log.Info("Adding Vault-Handler init-container", "name", container.Name)
+		// appending vault-handler as init-container
+		d.deployment.Template.Spec.InitContainers = append(
+			d.deployment.Template.Spec.InitContainers,
+			container,
+		)
+	}
+
+	return nil
+}
+
 // mergeInitContainers put together the container objects described as init-containers.
 func (d *Deployment) mergeInitContainers() error {
 	var err error
@@ -78,12 +116,21 @@ func (d *Deployment) mergeInitContainers() error {
 func (d *Deployment) Render() (*Deployment, error) {
 	var err error
 
+	if d.deployment.Template.Spec.Containers == nil {
+		err = errors.New("no containers informed in deployment")
+		d.log.Error(err, "spec.containers is nil")
+		return nil, err
+	}
+
 	if len(d.deployment.Template.Spec.Containers) != 1 {
 		err = errors.New("invalid amount of containers in deployment, must be only one")
 		d.log.Error(err, "Invalid amount of containers '%d'!", len(d.deployment.Template.Spec.Containers))
 		return nil, err
 	}
 
+	if err = d.mergeVaultHandler(); err != nil {
+		return nil, err
+	}
 	if err = d.mergeEnvs(); err != nil {
 		return nil, err
 	}
@@ -104,7 +151,7 @@ func NewDeployment(client client.Client, app *v1alpha1.ApperatorApp) *Deployment
 
 	return &Deployment{
 		client:     client,
-		deployment: &app.Spec.Deployment.Spec,
+		deployment: app.Spec.Deployment.Spec,
 		app:        app,
 		name:       name,
 		namespace:  namespace,
