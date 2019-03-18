@@ -155,8 +155,8 @@ group:
 	assert.Equal(t, namespace, deployment.namespace)
 }
 
-func TestDeploymentRender(t *testing.T) {
-	_, err := deployment.Render()
+func TestDeploymentRenderSpec(t *testing.T) {
+	_, err := deployment.RenderSpec()
 
 	assert.Nil(t, err)
 }

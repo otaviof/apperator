@@ -112,33 +112,33 @@ func (d *Deployment) mergeInitContainers() error {
 	return nil
 }
 
-// Render a deployment object based on ApperatorApp.
-func (d *Deployment) Render() (*Deployment, error) {
+// RenderSpec a deployment object based on ApperatorApp.
+func (d *Deployment) RenderSpec() (appsv1.DeploymentSpec, error) {
 	var err error
 
 	if d.deployment.Template.Spec.Containers == nil {
 		err = errors.New("no containers informed in deployment")
 		d.log.Error(err, "spec.containers is nil")
-		return nil, err
+		return d.deployment, err
 	}
 
 	if len(d.deployment.Template.Spec.Containers) != 1 {
 		err = errors.New("invalid amount of containers in deployment, must be only one")
 		d.log.Error(err, "Invalid amount of containers '%d'!", len(d.deployment.Template.Spec.Containers))
-		return nil, err
+		return d.deployment, err
 	}
 
 	if err = d.mergeVaultHandler(); err != nil {
-		return nil, err
+		return d.deployment, err
 	}
 	if err = d.mergeEnvs(); err != nil {
-		return nil, err
+		return d.deployment, err
 	}
 	if err = d.mergeInitContainers(); err != nil {
-		return nil, err
+		return d.deployment, err
 	}
 
-	return nil, nil
+	return d.deployment, nil
 }
 
 // NewDeployment setup request logging and base Deployment instance.
