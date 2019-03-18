@@ -3,18 +3,31 @@ package apperatorapp
 import (
 	"fmt"
 
-	v1alpha1 "github.com/otaviof/apperator/pkg/apis/apperator/v1alpha1"
+	vaulthandler "github.com/otaviof/vault-handler/pkg/vault-handler"
 	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // VaultHandler represents the init-container for vault-handler.
 type VaultHandler struct {
-	container     *corev1.Container        // shaped as vault-handler init-container
-	vault         *v1alpha1.ApperatorVault // CRD
-	vaultAddr     string                   // vault api endpoint
-	configMapName string                   // name of the config-map with vault-handler manifest
+	configMap *corev1.ConfigMap               // config-map with vault-handler construction
+	vaultAddr string                          // vault api endpoint
+	auth      *VaultHandlerAuth               // vault-handler authentication configuration
+	manifest  map[string]vaulthandler.Secrets // vault-handler manifest
+	container *corev1.Container               // shaped as vault-handler init-container
+}
+
+// VaultHandlerAuth section of config-map to define how vault-handler will authenticate.
+type VaultHandlerAuth struct {
+	SecretName string                     `yaml:"secretName"` // kubernetes secret name
+	SecretKeys VaultHandlerAuthSecretKeys `yaml:"secretKeys"` // kubernetes secret key mapping
+}
+
+// VaultHandlerAuthSecretKeys keys to map a secret to authentication config.
+type VaultHandlerAuthSecretKeys struct {
+	RoleID   string `yaml:"roleId"`   // key name for role-id
+	SecretID string `yaml:"secretId"` // key name for secret-id
+	Token    string `yaml:"token"`    // key name for token
 }
 
 const (
@@ -26,48 +39,9 @@ const (
 	manifestName       = "manifest.yaml"
 )
 
-func (v *VaultHandler) manifestAsString() (string, error) {
-	var payload []byte
-	var err error
-
-	if payload, err = yaml.Marshal(v.vault.Spec.Secrets); err != nil {
-		return "", err
-	}
-
-	return string(payload), nil
-}
-
-// ConfigMap with vault-handler extracted manifest.
-func (v *VaultHandler) ConfigMap() (*corev1.ConfigMap, error) {
-	var manifest string
-	var err error
-
-	if manifest, err = v.manifestAsString(); err != nil {
-		return nil, err
-	}
-
-	configMap := &corev1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "ConfigMap",
-		},
-		Data: map[string]string{"manifest.yaml": manifest},
-	}
-
-	return configMap, nil
-}
-
 // VolumeEntry creates the volume entries to be used
 func (v *VaultHandler) VolumeEntry() []corev1.Volume {
 	var volumes []corev1.Volume
-
-	// empty-dir to write secrets
-	volumes = append(volumes, corev1.Volume{
-		Name: secretVolumeName,
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
-	})
 
 	// mounting config-map with vault-handler manifest
 	volumes = append(volumes, corev1.Volume{
@@ -75,9 +49,17 @@ func (v *VaultHandler) VolumeEntry() []corev1.Volume {
 		VolumeSource: corev1.VolumeSource{
 			ConfigMap: &corev1.ConfigMapVolumeSource{
 				LocalObjectReference: corev1.LocalObjectReference{
-					Name: v.configMapName,
+					Name: v.configMap.ObjectMeta.Name,
 				},
 			},
+		},
+	})
+
+	// empty-dir to write secrets
+	volumes = append(volumes, corev1.Volume{
+		Name: secretVolumeName,
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{},
 		},
 	})
 
@@ -90,7 +72,7 @@ func (v *VaultHandler) generateEnvVarSource(key string) *corev1.EnvVarSource {
 	return &corev1.EnvVarSource{
 		SecretKeyRef: &corev1.SecretKeySelector{
 			LocalObjectReference: corev1.LocalObjectReference{
-				Name: v.vault.Spec.Authorization.SecretName,
+				Name: v.auth.SecretName,
 			},
 			Key: key,
 		},
@@ -106,24 +88,24 @@ func (v *VaultHandler) prepareEnv() []corev1.EnvVar {
 		Value: v.vaultAddr,
 	})
 
-	if v.vault.Spec.Authorization.SecretKeys.RoleID != "" {
+	if v.auth.SecretKeys.RoleID != "" {
 		envs = append(envs, corev1.EnvVar{
 			Name:      "VAULT_HANDLER_VAULT_ROLE_ID",
-			ValueFrom: v.generateEnvVarSource(v.vault.Spec.Authorization.SecretKeys.RoleID),
+			ValueFrom: v.generateEnvVarSource(v.auth.SecretKeys.RoleID),
 		})
 	}
 
-	if v.vault.Spec.Authorization.SecretKeys.SecretID != "" {
+	if v.auth.SecretKeys.SecretID != "" {
 		envs = append(envs, corev1.EnvVar{
 			Name:      "VAULT_HANDLER_VAULT_SECRET_ID",
-			ValueFrom: v.generateEnvVarSource(v.vault.Spec.Authorization.SecretKeys.SecretID),
+			ValueFrom: v.generateEnvVarSource(v.auth.SecretKeys.SecretID),
 		})
 	}
 
-	if v.vault.Spec.Authorization.SecretKeys.Token != "" {
+	if v.auth.SecretKeys.Token != "" {
 		envs = append(envs, corev1.EnvVar{
 			Name:      "VAULT_HANDLER_VAULT_TOKEN",
-			ValueFrom: v.generateEnvVarSource(v.vault.Spec.Authorization.SecretKeys.Token),
+			ValueFrom: v.generateEnvVarSource(v.auth.SecretKeys.Token),
 		})
 	}
 
@@ -146,6 +128,10 @@ func (v *VaultHandler) Container() *corev1.Container {
 
 	v.container.VolumeMounts = []corev1.VolumeMount{
 		corev1.VolumeMount{
+			Name:      manifestVolumeName,
+			MountPath: manifestVolumePath,
+		},
+		corev1.VolumeMount{
 			Name:      secretVolumeName,
 			MountPath: secretVolumePath,
 		},
@@ -154,12 +140,41 @@ func (v *VaultHandler) Container() *corev1.Container {
 	return v.container
 }
 
-// NewVaultHandler creates a new VaultHandler instance.
-func NewVaultHandler(vault *v1alpha1.ApperatorVault, vaultAddr, configMapName string) *VaultHandler {
-	return &VaultHandler{
-		container:     &corev1.Container{},
-		vault:         vault,
-		vaultAddr:     vaultAddr,
-		configMapName: configMapName,
+// parseConfigMapData look for expected keys and parse them as yaml.
+func (v *VaultHandler) parseConfigMapData() error {
+	var found bool
+	var authStr string
+	var secretsStr string
+	var err error
+
+	if authStr, found = v.configMap.Data["authorization"]; !found {
+		return fmt.Errorf("'authorization' section is not found in config-map")
 	}
+	if secretsStr, found = v.configMap.Data["secrets"]; !found {
+		return fmt.Errorf("'secrets' section is not found in config-map")
+	}
+
+	if err = yaml.Unmarshal([]byte(authStr), &v.auth); err != nil {
+		return err
+	}
+	if err = yaml.Unmarshal([]byte(secretsStr), &v.manifest); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// NewVaultHandler create a new instance by parsing config-map contents.
+func NewVaultHandler(configMap *corev1.ConfigMap, vaultAddr string) (*VaultHandler, error) {
+	vaultHandler := &VaultHandler{
+		configMap: configMap,
+		vaultAddr: vaultAddr,
+		container: &corev1.Container{},
+	}
+
+	if err := vaultHandler.parseConfigMapData(); err != nil {
+		return nil, err
+	}
+
+	return vaultHandler, nil
 }
