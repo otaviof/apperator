@@ -45,6 +45,5 @@ rules:
   - apperatorenvs
   - apperatorcontainers
   - apperatorprobes
-  - apperatorvaults
   verbs:
   - '*'
