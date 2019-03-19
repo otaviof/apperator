@@ -146,7 +146,7 @@ func NewDeployment(client client.Client, app *v1alpha1.ApperatorApp) *Deployment
 	name := app.ObjectMeta.Name
 	namespace := app.ObjectMeta.Namespace
 	log := logf.Log.
-		WithName("controller_deployment").
+		WithName("controller_apperatorapp_deployment").
 		WithValues("Request.Namespace", namespace, "Request.Name", name)
 
 	return &Deployment{

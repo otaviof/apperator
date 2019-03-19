@@ -19,15 +19,20 @@ import (
 type ReconcileApperatorApp struct {
 	client client.Client
 	scheme *runtime.Scheme
-	log    logr.Logger
+}
+
+// getReqLogger creates a logger based the request and current file.
+func (r *ReconcileApperatorApp) getReqLogger(req reconcile.Request) logr.Logger {
+	return logf.Log.WithName("controller_apperatorapp_reconcile").
+		WithValues("Request.Namespace", req.Namespace, "Request.Name", req.Name)
 }
 
 // Reconcile reads the state of ApperatorApp and decide further changes.
 func (r *ReconcileApperatorApp) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	var logger = r.getReqLogger(req)
 	var err error
 
-	reqLogger := r.log.WithValues("Request.Namespace", req.Namespace, "Request.Name", req.Name)
-	reqLogger.Info("Reconciling ApperatorApp...")
+	logger.Info("Reconciling ApperatorApp...")
 
 	app := &v1alpha1.ApperatorApp{}
 	if err = r.client.Get(context.TODO(), req.NamespacedName, app); err != nil {
@@ -46,46 +51,45 @@ func (r *ReconcileApperatorApp) Reconcile(req reconcile.Request) (reconcile.Resu
 
 	controller := NewDeployment(r.client, app)
 	if deployment.Spec, err = controller.RenderSpec(); err != nil {
-		reqLogger.Error(err, "Failed to render a new deployment")
+		logger.Error(err, "Failed to render a new deployment")
 		return reconcile.Result{}, err
 	}
 
-	reqLogger.Info("Looking for deployment object")
+	logger.Info("Looking for deployment object")
 	currentDeployment := &appsv1.Deployment{}
 	if err = r.client.Get(context.TODO(), req.NamespacedName, currentDeployment); err != nil {
 		if !errors.IsNotFound(err) {
-			reqLogger.Error(err, "Failed to read deployment")
+			logger.Error(err, "Failed to read deployment")
+			return reconcile.Result{}, err
 		}
 
-		reqLogger.Info("Creating a new deployment", "name", deployment.Name)
+		logger.Info("Creating a new deployment", "name", deployment.Name)
 		if err = r.client.Create(context.TODO(), deployment); err != nil {
-			reqLogger.Error(err, "Failed to create deployment")
+			logger.Error(err, "Failed to create deployment")
 			return reconcile.Result{}, err
 		}
 
 		return reconcile.Result{Requeue: true}, nil
 	}
 
-	reqLogger.Info("Checking if deployment is up-to-date", "name", currentDeployment.Name)
+	logger.Info("Checking if Deployment Spec is up-to-date", "name", currentDeployment.Name)
 	if !reflect.DeepEqual(currentDeployment.Spec, deployment.Spec) {
-		reqLogger.Info("Updating deployment", "name", currentDeployment.Name)
+		logger.Info("Updating deployment", "name", currentDeployment.Name)
 		currentDeployment.Spec = deployment.Spec
 
 		if err = r.client.Update(context.TODO(), currentDeployment); err != nil {
-			reqLogger.Error(err, "Failed to update deployment")
+			logger.Error(err, "Failed to update deployment")
 			return reconcile.Result{}, err
 		}
 
 		return reconcile.Result{Requeue: true}, nil
 	}
 
-	reqLogger.Info("Deployment is up-to-date", "name", currentDeployment.Name)
+	logger.Info("Deployment is up-to-date", "name", currentDeployment.Name)
 	return reconcile.Result{}, nil
 }
 
 // newReconcileApperatorApp creates a new instance setting up logger first.
-func newReconcileApperatorApp() *ReconcileApperatorApp {
-	return &ReconcileApperatorApp{
-		log: logf.Log.WithName("controller_apperatorapp_reconcile"),
-	}
+func newReconcileApperatorApp(client client.Client, scheme *runtime.Scheme) *ReconcileApperatorApp {
+	return &ReconcileApperatorApp{client: client, scheme: scheme}
 }

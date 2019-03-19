@@ -20,15 +20,12 @@ var deployment *Deployment
 // TestNewDeployment setup Deployment object with context. This method setup the Kubernetes related
 // infrastructure so we can run the controller code.
 func TestDeploymentNew(t *testing.T) {
-	// setting up verbose logging
-	logf.SetLogger(logf.ZapLogger(true))
+	var name = "app"
+	var namespace = "apperator"
+	var matchLabels = map[string]string{"app": "apperator"}
+	var replicas int32 = 1
 
-	var (
-		name              = "app"
-		namespace         = "apperator"
-		matchLabels       = map[string]string{"app": "apperator"}
-		replicas    int32 = 1
-	)
+	logf.SetLogger(logf.ZapLogger(true))
 
 	apperatorEnvObj := &v1alpha1.ApperatorEnv{
 		ObjectMeta: metav1.ObjectMeta{
