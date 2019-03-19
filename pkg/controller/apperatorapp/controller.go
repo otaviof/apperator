@@ -1,7 +1,7 @@
 package apperatorapp
 
 import (
-	apperatorv1alpha1 "github.com/otaviof/apperator/pkg/apis/apperator/v1alpha1"
+	v1alpha1 "github.com/otaviof/apperator/pkg/apis/apperator/v1alpha1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -22,7 +22,7 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler.
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileApperatorApp{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return newReconcileApperatorApp(mgr.GetClient(), mgr.GetScheme())
 }
 
 // add new controller manager, will start watching for objects this controller is interested on.
@@ -33,7 +33,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	if err = c.Watch(
-		&source.Kind{Type: &apperatorv1alpha1.ApperatorApp{}},
+		&source.Kind{Type: &v1alpha1.ApperatorApp{}},
 		&handler.EnqueueRequestForObject{},
 	); err != nil {
 		return err
@@ -41,7 +41,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	if err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &apperatorv1alpha1.ApperatorApp{},
+		OwnerType:    &v1alpha1.ApperatorApp{},
 	}); err != nil {
 		return err
 	}
@@ -49,4 +49,4 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-var _ reconcile.Reconciler = newReconcileApperatorApp()
+var _ reconcile.Reconciler = &ReconcileApperatorApp{}
