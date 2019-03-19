@@ -23,6 +23,7 @@ import (
 
 func TestController(t *testing.T) {
 	var name = "apperator-app"
+	var image = "example/image:latest"
 	var namespace = "apperator"
 	var replicas int32 = 1
 	var matchLabels = map[string]string{"app": "apperator"}
@@ -48,8 +49,8 @@ func TestController(t *testing.T) {
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
 								corev1.Container{
-									Name:  "app",
-									Image: "example/image:latest",
+									Name:  name,
+									Image: image,
 								},
 							},
 						},
@@ -83,6 +84,11 @@ func TestController(t *testing.T) {
 	deployment := appsv1.Deployment{}
 	meta := types.NamespacedName{Name: name, Namespace: namespace}
 	err = client.Get(context.TODO(), meta, &deployment)
+
+	// produced deployment has amount of replicas set, name and image
+	assert.Equal(t, &replicas, deployment.Spec.Replicas)
+	assert.Equal(t, name, deployment.Spec.Template.Spec.Containers[0].Name)
+	assert.Equal(t, image, deployment.Spec.Template.Spec.Containers[0].Image)
 
 	// showing deployment as yaml
 	yamlBytes, _ := yaml.Marshal(deployment)
