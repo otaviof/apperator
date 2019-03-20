@@ -16,7 +16,7 @@ spec:
       serviceAccountName: apperator
       containers:
         - name: apperator
-          image: otaviof/apperator:latest
+          image: otaviof/apperator:test
           command:
             - apperator
           imagePullPolicy: Always
@@ -31,10 +31,4 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "apperator"
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128m
-            limits:
-              cpu: 300m
-              memory: 512m
+          resources: {}
