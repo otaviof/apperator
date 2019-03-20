@@ -14,11 +14,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 var (
 	retryInterval        = time.Second * 5
-	timeout              = time.Second * 45
+	timeout              = time.Second * 120
 	cleanupRetryInterval = time.Second * 1
 	cleanupTimeout       = time.Second * 5
 )
@@ -113,6 +114,15 @@ func apperatorAppTest(t *testing.T, namespace string, f *framework.Framework, ct
 	err = e2eutil.WaitForDeployment(t, f.KubeClient, namespace, name, 1, retryInterval, timeout)
 	// should not have errors on waiting for deployment, the deployment must be successful
 	assert.Nil(t, err)
+
+	// retrieving deployment object
+	deployment := &appsv1.Deployment{}
+	meta := types.NamespacedName{Name: name, Namespace: namespace}
+	err = f.Client.Get(context.TODO(), meta, deployment)
+	assert.Nil(t, err)
+
+	// checking if original values have been kept in deployment
+	assert.Equal(t, corev1.DNSPolicy("ClusterFirst"), deployment.Spec.Template.Spec.DNSPolicy)
 }
 
 // ApperatorApp creates all the underlying things to run tests against a Kubernetes cluster.
