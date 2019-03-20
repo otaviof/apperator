@@ -3,4 +3,11 @@ apiVersion: apperator.otaviof.github.io/v1alpha1
 kind: ApperatorApp
 metadata:
   name: example-apperatorapp
-spec: {}
+spec:
+  deployment:
+    spec: {}
+  envs: []
+  initContainers: []
+  sidecars: []
+  probes: []
+  vault: []
