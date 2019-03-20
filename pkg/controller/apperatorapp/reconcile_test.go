@@ -19,7 +19,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
-func TestController(t *testing.T) {
+func TestReconcile(t *testing.T) {
 	var name = "apperator-app"
 	var image = "example/image:latest"
 	var namespace = "apperator"
