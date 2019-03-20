@@ -13,18 +13,18 @@ import (
 // ApperatorAppSpec defines the desired state of ApperatorApp
 // +k8s:openapi-gen=true
 type ApperatorAppSpec struct {
-	Deployment     DeploymentSpec `json:"deployment"`
-	Envs           []string       `json:"envs"`
-	InitContainers []string       `json:"initContainers"`
-	Sidecars       []string       `json:"sidecars"`
-	Probes         []string       `json:"probes"`
-	Vault          []string       `json:"vault"`
+	Deployment     ApperatorAppDeploymentSpec `json:"deployment"`     // deployment
+	Envs           []string                   `json:"envs"`           // list of env objects
+	InitContainers []string                   `json:"initContainers"` // list of init-containers
+	Sidecars       []string                   `json:"sidecars"`       // list of side-cars
+	Probes         []string                   `json:"probes"`         // list of probes
+	Vault          []string                   `json:"vault"`          // list of vault integrations
 }
 
-// DeploymentSpec describes a core-v1 deployment spec object
+// ApperatorAppDeploymentSpec describes a core-v1 deployment spec object
 // +k8s:openapi-gen=true
-type DeploymentSpec struct {
-	Spec appsv1.DeploymentSpec `json:"spec"`
+type ApperatorAppDeploymentSpec struct {
+	Spec appsv1.DeploymentSpec `json:"spec"` // k8s deployment spec
 }
 
 // ApperatorAppStatus holds the operator status
