@@ -20,14 +20,22 @@ build-test: FORCE
 push: build
 	docker push $(IMAGE_PREFIX)/$(OPERATOR):latest
 
+push-test: build-test
+	docker push $(IMAGE_PREFIX)/$(OPERATOR):test
+
 test: FORCE
 	go test -cover -v ./pkg/controller/apperatorapp
 
 integration-local:
-	operator-sdk test local ./test/e2e --namespace $(NAMESPACE)
+	operator-sdk test local ./test/e2e \
+		--debug \
+		--go-test-flags "-v" \
+		--up-local \
+		--namespace apperator
 
-integration-cluster: build-test
-	docker push $(IMAGE_PREFIX)/$(OPERATOR):test
-	operator-sdk test cluster --namespace $(NAMESPACE) $(IMAGE_PREFIX)/$(OPERATOR):test
+integration-cluster: push-test
+	operator-sdk test cluster $(IMAGE_PREFIX)/$(OPERATOR):test \
+		--namespace $(NAMESPACE) \
+		--service-account $(NAMESPACE)
 
 FORCE: ;
