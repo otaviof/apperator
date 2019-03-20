@@ -115,7 +115,7 @@ func apperatorAppTest(t *testing.T, namespace string, f *framework.Framework, ct
 	assert.Nil(t, err)
 }
 
-// ApperatorApp creates all the underlying things to run tests against a Kuberentes cluster.
+// ApperatorApp creates all the underlying things to run tests against a Kubernetes cluster.
 func ApperatorApp(t *testing.T) {
 	var namespace string
 	var err error
