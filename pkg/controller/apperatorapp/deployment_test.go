@@ -94,7 +94,7 @@ group:
 			Namespace: namespace,
 		},
 		Spec: v1alpha1.ApperatorAppSpec{
-			Deployment: v1alpha1.DeploymentSpec{
+			Deployment: v1alpha1.ApperatorAppDeploymentSpec{
 				Spec: appsv1.DeploymentSpec{
 					Replicas: &replicas,
 					Selector: &metav1.LabelSelector{

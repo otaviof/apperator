@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"gopkg.in/yaml.v2"
-
-	"github.com/stretchr/testify/assert"
-
 	v1alpha1 "github.com/otaviof/apperator/pkg/apis/apperator/v1alpha1"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,32 +28,34 @@ func TestController(t *testing.T) {
 
 	logf.SetLogger(logf.ZapLogger(true))
 
+	deploymentSpecObj := appsv1.DeploymentSpec{
+		Replicas: &replicas,
+		Selector: &metav1.LabelSelector{
+			MatchLabels: matchLabels,
+		},
+		Template: corev1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: matchLabels,
+			},
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					corev1.Container{
+						Name:  name,
+						Image: image,
+					},
+				},
+			},
+		},
+	}
+
 	apperatorAppObj := &v1alpha1.ApperatorApp{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 		Spec: v1alpha1.ApperatorAppSpec{
-			Deployment: v1alpha1.DeploymentSpec{
-				Spec: appsv1.DeploymentSpec{
-					Replicas: &replicas,
-					Selector: &metav1.LabelSelector{
-						MatchLabels: matchLabels,
-					},
-					Template: corev1.PodTemplateSpec{
-						ObjectMeta: metav1.ObjectMeta{
-							Labels: matchLabels,
-						},
-						Spec: corev1.PodSpec{
-							Containers: []corev1.Container{
-								corev1.Container{
-									Name:  name,
-									Image: image,
-								},
-							},
-						},
-					},
-				},
+			Deployment: v1alpha1.ApperatorAppDeploymentSpec{
+				Spec: deploymentSpecObj,
 			},
 		},
 	}
@@ -92,7 +92,7 @@ func TestController(t *testing.T) {
 
 	// showing deployment as yaml
 	yamlBytes, _ := yaml.Marshal(deployment)
-	fmt.Printf("%s\n", string(yamlBytes))
+	fmt.Printf("\n%s\n", string(yamlBytes))
 
 	// running reconciliation again
 	res, err = r.Reconcile(req)
