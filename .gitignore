@@ -2,4 +2,5 @@
 .vscode/*
 build/_output
 build/_test
+build/bin
 vendor/*
