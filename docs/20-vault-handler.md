@@ -40,8 +40,8 @@ spec:
         - name: keystore
           # file extension
           extension: jks # when using "file" as type
-          # unzip payload
-          unzip: true # only when having "file" as type
+          # zip payload
+          zip: true # only when having "file" as type
 ```
 
 TODO: document how to set-up secret for vault-handler authorization;

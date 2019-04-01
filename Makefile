@@ -17,6 +17,9 @@ build: FORCE
 build-test: FORCE
 	operator-sdk build --enable-tests $(IMAGE_PREFIX)/$(OPERATOR):test
 
+clean-vendor:
+	rm -rf ./vendor > /dev/null
+
 push: build
 	docker push $(IMAGE_PREFIX)/$(OPERATOR):latest
 

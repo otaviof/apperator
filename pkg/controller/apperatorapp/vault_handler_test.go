@@ -30,7 +30,7 @@ group:
   data:
     - name: name
       extension: txt
-      unzip: true
+      zip: true
       nameAsSubPath: true`,
 		},
 	}
@@ -49,7 +49,7 @@ group:
 	assert.True(t, len(vaultHandler.manifest["group"].Data) > 0)
 	assert.Equal(t, "name", vaultHandler.manifest["group"].Data[0].Name)
 	assert.Equal(t, "txt", vaultHandler.manifest["group"].Data[0].Extension)
-	assert.Equal(t, true, vaultHandler.manifest["group"].Data[0].Unzip)
+	assert.Equal(t, true, vaultHandler.manifest["group"].Data[0].Zip)
 	assert.Equal(t, true, vaultHandler.manifest["group"].Data[0].NameAsSubPath)
 }
 
