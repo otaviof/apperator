@@ -513,12 +513,12 @@
   revision = "c2efe6f74e7b5b430c84f8f6e6f167730cd5a7d9"
 
 [[projects]]
-  branch = "master"
-  digest = "1:c06969f4e7d25266db60e9065a074421e5e7ee550ab6cf5028ed952cf6f07e03"
+  digest = "1:bb7d4d09142e1e14c3a5357c8dd7ac1d0eba3774af12b1c7015fd24dbfd3d1ba"
   name = "github.com/otaviof/vault-handler"
   packages = ["pkg/vault-handler"]
   pruneopts = "NT"
-  revision = "8a59a9b823e05d8a3b941674c0806398025b25c5"
+  revision = "d8128b30423c5e45f9be47236b586690091de31c"
+  version = "0.1.0"
 
 [[projects]]
   digest = "1:93b1d84c5fa6d1ea52f4114c37714cddd84d5b78f151b62bb101128dd51399bf"
@@ -638,12 +638,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:1f84287a4ca2c8f729d8155ba4c45915f5854ebbd214e406070779753da68422"
+  digest = "1:c8a0dfc6208c2af75549dbd7a0c4446cc214b7a049a872858a8ec6f58e4fd082"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "NT"
-  revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
-  version = "v1.3.0"
+  revision = "dae0fa8d5b0c810a8ab733fbd5510c7cae84eca4"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:1bc08ec221c4fb25e6f2c019b23fe989fb44573c696983d8e403a3b76cc378e1"
