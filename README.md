@@ -1,4 +1,20 @@
-<p align="center"><img src="./assets/logo/apperator.png" /></p>
+<p align="center">
+    <img src="https://raw.githubusercontent.com/otaviof/apperator/master/assets/logo/apperator.png" />
+</p>
+<p align="center">
+    <a alt="GoReport" href="https://goreportcard.com/report/github.com/otaviof/apperator">
+        <img src="https://goreportcard.com/badge/github.com/otaviof/apperator">
+    </a>
+    <a alt="Code Coverage" href="https://codecov.io/gh/otaviof/apperator">
+        <img src="https://codecov.io/gh/otaviof/apperator/branch/master/graph/badge.svg">
+    </a>
+    <a alt="CI Status" href="https://travis-ci.com/otaviof/apperator">
+        <img src="https://travis-ci.com/otaviof/apperator.svg?branch=master">
+    </a>
+    <a alt="Docker-Cloud Build Status" href="https://hub.docker.com/r/otaviof/apperator">
+        <img src="https://img.shields.io/docker/cloud/build/otaviof/apperator.svg">
+    </a>
+</p>
 
 # `apperator` (WIP)
 
