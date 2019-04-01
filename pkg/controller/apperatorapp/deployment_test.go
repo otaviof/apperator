@@ -34,7 +34,7 @@ func TestDeploymentNew(t *testing.T) {
 		},
 		Spec: v1alpha1.ApperatorEnvSpec{
 			Env: []corev1.EnvVar{
-				corev1.EnvVar{
+				{
 					Name:  "ENV_VAR_2",
 					Value: "VALUE",
 				},
@@ -83,7 +83,7 @@ group:
   data:
     - name: name
       extension: txt
-      unzip: true
+      zip: true
       nameAsSubPath: true`,
 		},
 	}
@@ -106,11 +106,11 @@ group:
 						},
 						Spec: corev1.PodSpec{
 							Containers: []corev1.Container{
-								corev1.Container{
+								{
 									Name:  "app",
 									Image: "example/image:latest",
 									Env: []corev1.EnvVar{
-										corev1.EnvVar{
+										{
 											Name:  "ENV_VAR_1",
 											Value: "VALUE",
 										},

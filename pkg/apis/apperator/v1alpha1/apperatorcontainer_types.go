@@ -8,7 +8,7 @@ import (
 // ApperatorContainerSpec defines the desired state of ApperatorContainer
 // +k8s:openapi-gen=true
 type ApperatorContainerSpec struct {
-	Spec corev1.Container `json"spec"`
+	Spec corev1.Container `json:"spec"`
 }
 
 // ApperatorContainerStatus defines the observed state of ApperatorContainer

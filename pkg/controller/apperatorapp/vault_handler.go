@@ -127,11 +127,11 @@ func (v *VaultHandler) Container() corev1.Container {
 	v.container.Env = v.prepareEnv()
 
 	v.container.VolumeMounts = []corev1.VolumeMount{
-		corev1.VolumeMount{
+		{
 			Name:      manifestVolumeName,
 			MountPath: manifestVolumePath,
 		},
-		corev1.VolumeMount{
+		{
 			Name:      secretVolumeName,
 			MountPath: secretVolumePath,
 		},
@@ -157,11 +157,7 @@ func (v *VaultHandler) parseConfigMapData() error {
 	if err = yaml.Unmarshal([]byte(authStr), &v.auth); err != nil {
 		return err
 	}
-	if err = yaml.Unmarshal([]byte(secretsStr), &v.manifest); err != nil {
-		return err
-	}
-
-	return nil
+	return yaml.Unmarshal([]byte(secretsStr), &v.manifest)
 }
 
 // NewVaultHandler create a new instance by parsing config-map contents.

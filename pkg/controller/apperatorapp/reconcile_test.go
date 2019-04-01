@@ -39,7 +39,7 @@ func TestReconcile(t *testing.T) {
 			},
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
-					corev1.Container{
+					{
 						Name:  name,
 						Image: image,
 					},
@@ -84,6 +84,7 @@ func TestReconcile(t *testing.T) {
 	deployment := appsv1.Deployment{}
 	meta := types.NamespacedName{Name: name, Namespace: namespace}
 	err = client.Get(context.TODO(), meta, &deployment)
+	assert.Nil(t, err)
 
 	// produced deployment has amount of replicas set, name and image
 	assert.Equal(t, &replicas, deployment.Spec.Replicas)

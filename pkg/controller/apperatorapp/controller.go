@@ -39,14 +39,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	if err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
+	return c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &v1alpha1.ApperatorApp{},
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
 var _ reconcile.Reconciler = &ReconcileApperatorApp{}

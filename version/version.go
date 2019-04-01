@@ -1,5 +1,4 @@
 package version
 
-var (
-	Version = "0.0.1"
-)
+// Version operator/project version string
+const Version = "0.0.1"
